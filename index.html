@@ -1,0 +1,98 @@
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+    <script>
+        $(document).ready(init);
+        function init() {
+            dealer = new Deck();
+            player = new Deck();
+            dealer.createDeck();
+            dealer.shuffle(dealer.deck);
+            $(".deal").on("click", function() {
+                dealer.startingDeal(player);
+            });
+            $(".hit").on("click", function() {
+                dealer.hit(player);
+            });
+            $(".reset").on("click", reset)
+        }
+        var dealer = null;
+        var player = null;
+        function Deck() {
+            this.cards = ["Ace",2,3,4,5,6,7,8,9,10,"Jack","Queen","King"];
+            this.values = [1,2,3,4,5,6,7,8,9,10,10,10,10];
+            this.suits = ["Clubs","Hearts","Diamonds","Spades"];
+            this.deck = [];
+            this.createDeck = function() {
+                for (var i = 0; i < this.suits.length; i++) {
+                    for (var j = 0; j < this.cards.length; j++) {
+                        this.deck.push(new Card(this.cards[j], this.values[j], this.suits[i]))
+                    }
+                }
+            };
+            this.shuffle = function(cards) {
+                for (var i = cards.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i+1));
+                    var temp = cards[i];
+                    cards[i] = cards[j];
+                    cards[j] = temp;
+                }
+                return cards;
+            };
+            this.deal = function (recipient) {
+                var newCard = this.deck.pop();
+                recipient.deck.push(newCard);
+
+                $(".cardContainer").append($("<div>").text(newCard.type+" of "+newCard.suit))
+            };
+            this.startingDeal = function(recipient) {
+                this.deal(recipient);
+                this.deal(recipient);
+                recipient.checkTotal();
+            };
+            this.hit = function(recipient) {
+                this.deal(recipient);
+                recipient.checkTotal();
+            };
+            this.checkTotal = function () {
+                var total = 0;
+                for (var i = 0; i < this.deck.length; i++) {
+                    total += parseInt(this.deck[i].value);
+                }
+                if (total === 21 || (total < 21 && this.deck.length === 5)) {
+                    $(".total").text("You win!");
+                } else if (total > 21) {
+                    $(".total").text("You lose!");
+                } else {
+                    $(".total").text("Current Total: "+total);
+                }
+            };
+            function Card (card, value, suit) {
+                this.type = card;
+                this.value = value;
+                this.suit = suit;
+            }
+        }
+        function reset() {
+            $(".cardContainer").html("");
+            $(".total").html("");
+            player.deck = [];
+            if(dealer.deck.length <= 10) {
+                dealer.deck = [];
+                dealer.createDeck();
+                dealer.shuffle(dealer.deck);
+            }
+        };
+    </script>
+</head>
+<body>
+    <div>BlackJack Game</div>
+    <button class="deal">Deal</button>
+    <button class="hit">Hit</button>
+    <button class="reset">New Game</button>
+    <div class="currentCards">Current Cards:
+        <div class="cardContainer"></div>
+    </div>
+    <div class="total"></div>
+</body>
+</html>
